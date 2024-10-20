@@ -140,6 +140,10 @@ venv.bak/
 # mkdocs documentation
 /site
 
+# Ignore Python cache
+__pycache__/
+*.py[cod]
+
 # mypy
 .mypy_cache/
 .dmypy.json
