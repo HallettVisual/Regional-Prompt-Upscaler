@@ -1,41 +1,71 @@
-# Script Class for Gradio UI
-import cv2  # OpenCV for blurriness detection
-import math
-import gradio as gr
-from PIL import Image, ImageDraw, ImageFilter
-from modules import processing, shared, images, devices, scripts
-from modules.processing import StableDiffusionProcessing, Processed, fix_seed
-from modules.shared import opts, state
-from enum import Enum
+import subprocess
+import sys
+import importlib
+
+# Utility functions
+# Function to install a Python package
+def install(package):
+    try:
+        print(f"Installing package: {package}")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", package])
+    except Exception as e:
+        print(f"Failed to install {package}: {e}")
+
+# Function to ensure a package is installed
+def ensure_package_installed(package, module_name=None):
+    if module_name is None:
+        module_name = package
+    try:
+        __import__(module_name)
+    except ImportError:
+        print(f"{package} is not installed. Attempting to install...")
+        install(package)
+
+# Ensure spacy is installed
+ensure_package_installed('spacy')
+
+# Now that spacy is installed, we import it
+import spacy  # Natural Language Processing
+
+# Ensure the SpaCy model 'en_core_web_sm' is installed
+def ensure_spacy_model_installed(model):
+    try:
+        spacy.load(model)
+    except OSError:
+        print(f"Spacy model '{model}' not found. Installing...")
+        subprocess.check_call([sys.executable, "-m", "spacy", "download", model])
+        print(f"Spacy model '{model}' installed successfully.")
+
+# Now ensure the SpaCy model is installed
+ensure_spacy_model_installed('en_core_web_sm')
+
+# Now that dependencies are ensured, import other necessary modules
+from openpyxl import Workbook, load_workbook
+from openpyxl.utils import get_column_letter
+from openpyxl.styles import Alignment
+
+# Standard library imports and core dependencies
 import os
-import spacy
-import torch
+import math
+import re  # For regular expressions
+import copy  # For making deep copies of objects
+from enum import Enum
+
+# External libraries
+import cv2  # OpenCV for blurriness detection
+import torch  # PyTorch
+import numpy as np
+from PIL import Image, ImageDraw, ImageFilter
 from transformers import (
     BlipProcessor, BlipForConditionalGeneration,
     CLIPProcessor, CLIPModel
 )
-import numpy as np
-import sys
-import copy  # Import the copy module
-import re  # For regular expressions
+import gradio as gr  # Gradio UI library
 
-# Attempt to import openpyxl and handle dependency
-try:
-    from openpyxl import Workbook, load_workbook
-    from openpyxl.utils import get_column_letter
-    from openpyxl.styles import Alignment
-except ImportError:
-    print("The 'openpyxl' library is required for Excel functionality. Attempting to install it now...")
-    try:
-        import subprocess
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "openpyxl"])
-        from openpyxl import Workbook, load_workbook
-        from openpyxl.utils import get_column_letter
-        from openpyxl.styles import Alignment
-        print("'openpyxl' has been successfully installed.")
-    except Exception as e:
-        print(f"Failed to install 'openpyxl'. Please install it manually using 'pip install openpyxl'. Error: {e}")
-        raise
+# Stable Diffusion WebUI-specific imports
+from modules import processing, shared, images, devices, scripts
+from modules.processing import StableDiffusionProcessing, Processed, fix_seed
+from modules.shared import opts, state
 
 # Initialize device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
