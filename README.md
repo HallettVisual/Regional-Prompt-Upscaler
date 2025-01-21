@@ -17,7 +17,8 @@ The **Regional Prompt Upscaler** is a powerful extension for **Automatic1111 Web
   
 - **Regional Prompt Export to Excel**:
   Export tile prompts to an Excel file for batch editing and re-import them to streamline your workflow.  
-  Example of an exported Excel file:  
+  Example of an exported Excel file:
+  
   ![Excel Export](assets/excel_example.JPG)
   
 - **Simple or Complex Prompt Options**:
