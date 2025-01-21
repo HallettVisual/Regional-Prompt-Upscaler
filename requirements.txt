@@ -1,0 +1,8 @@
+torch
+transformers
+openpyxl
+numpy
+opencv-python
+Pillow
+gradio
+clip-interrogator

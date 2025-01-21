@@ -54,7 +54,7 @@ pip install -r requirements.txt
 
 ### Upscaled Output
 
-![Upscaled Output](assets/Upscale_Forge.jpeg)
+![Upscaled Output](assets/Upscale_Forge2.jpeg)
 
 In this example, different prompts were applied to different regions of the image, resulting in an intelligently upscaled image.
 
