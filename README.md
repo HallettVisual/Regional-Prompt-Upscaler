@@ -106,7 +106,7 @@ Example interface:
   - **0.3–0.5 for visible changes** (recommended: **0.38** for balance).  
 
 Example of settings in WebUI:  
-![Settings Panel](assets/hallett_settings.jpeg)
+![Settings Panel](assets/hallett_settings.jpg)
 
 ---
 
