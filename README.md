@@ -135,7 +135,7 @@ Export example:
 The upscaled image will include enhanced details with smooth tile blending.  
 
 Example of upscaled output:  
-![Upscaled Output](assets/upscale_title.png)
+![Upscaled Output](assets/sample_compare.jpg)
 
 ---
 
