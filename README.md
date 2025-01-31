@@ -18,7 +18,8 @@ The **Regional Prompt Upscaler and Detailer** is an upscaler+detailer extension 
 
 - **Regional Prompt Export/Import via Excel**  
   Export tile prompts to a .xlsx file for batch editing, then re-import them to streamline your workflow.  
-  Example of an exported Excel file:  
+  Example of an exported Excel file:
+  
   ![Excel Export](assets/excel_example.JPG)
 
 - **Simple or Complex Prompt Modes**  
