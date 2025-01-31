@@ -1,72 +1,177 @@
-# Regional-Prompt-Upscaler
-Works similar to the Ultimate Upscaler except that uses Vision-Language Models to generate prompts for each tile.  Plus a collection of other features.
+# **Regional Prompt Upscaler and Detailer**
 
-# Regional Prompt Upscaler for Automatic1111
+**Version:** 1.3  
+**Author:** [Matthew Hallett](https://hallett-ai.com)
 
-This extension allows users to upscale images using regional prompts with the Automatic1111 web UI or Forge. It provides flexibility in enhancing specific regions of an image using different prompts.
+The **Regional Prompt Upscaler and Detailer** is an upscaler+detailer extension for **Automatic1111 Web UI** and **Forge**, based on [Ultimate Upscale for Automatic1111](https://github.com/Coyote-A/ultimate-upscale-for-automatic1111). It enhances the process by automatically applying region-specific prompts for each tile before generation, leveraging four different Vision-Language Models (VLMs). This approach adds fine details in specific areas while preserving large, smooth sections like skies—keeping them free of artifacts or hallucinations. Unlike ControlNet-Tile, which can constrain new detail generation or transformations when combined with LoRAs, this extension offers more freedom and nuance.
 
-### Key Points Included:
-- **Features**: Explains what the tool does and how it enhances images based on region-specific prompts.
-- **Installation**: Provides step-by-step instructions for cloning the repository and setting up the extension with Automatic1111 or Forge.
-- **Usage**: Simple steps to guide users on how to define regions, input prompts, and run the upscaling process.
-- **Requirements**: Lists the basic requirements and dependencies needed for the project.
-- **Examples**: Shows input and output examples (you can add images or screenshots in the `assets/` folder).
-- **Contributing**: Encourages contributions from the community.
-- **License**: The project is licensed under **GPLv3**, which you have chosen.
+## **Features**
 
-1. **Clone the repository**:
+- **Auto Prompt Generation Methods Per Tile**  
+  Generate region-specific prompts using **BLIP**, **Florence-2**, **CLIP**, or **ViT-GPT2**, each providing a unique style of image detection.
+
+- **Easily Remove False Prompts Before Generation**  
+  Remove prompts before generation that you know will cause undesirable hallucinations
+
+- **Auto Tile Scaling**  
+  Dynamically chooses tile size based on your image dimensions, ensuring efficient tiling and consistent results.
+
+- **Regional Prompt Export/Import via Excel**  
+  Export tile prompts to a .xlsx file for batch editing, then re-import them to streamline your workflow.  
+  Example of an exported Excel file:  
+  ![Excel Export](assets/excel_example.JPG)
+
+- **Simple or Complex Prompt Modes**  
+  Quickly switch between short (“Simple”) or in-depth (“Complex”) prompts, depending on the detail level you want.
+
+- **Advanced Feathering & Overlap**  
+  Control feathering and overlap percentages to blend tiles seamlessly without visible transitions.
+
+- **Convenient LoRA Selection**  
+  Apply LoRA models via a straightforward dropdown. The script injects these settings into each tile prompt automatically.
+
+- **No Resolution Limits**  
+  Upscale far beyond 4X by repeatedly applying multi-generation upscaling and prompt control, achieving extremely high resolutions.
+
+- **Works with Flux, SD, SDXL & SD3**  
+  Fully compatible with modern pipelines, letting you leverage your preferred models and control methods.
+
+---
+
+## **Benefits**
+
+1. **Granular Regional Customization**  
+   Apply unique prompts to specific image regions for ultra-fine control.
+
+2. **Integrated & Easy to Use**  
+   Fully embedded in Automatic1111 and Forge, with a simple installation process.
+
+3. **Automation for Efficiency**  
+   Handles prompt creation, tiling, and blending automatically, so you get high-quality results with minimal manual overhead.
+
+4. **Flexible Prompt Length**  
+   Toggle between simple or detailed prompts for creative freedom or quick iteration.
+
+5. **Professional Results**  
+   Ideal for architectural renders, aerial photography, or any creative composition requiring clarity and detail.
+
+---
+
+## **Installation**
+
+### **Option 1: Automatic Installation (Recommended)**
+
+1. **Download** this repository or grab the ZIP from the [Releases](../../releases).
+2. Extract the contents to a folder on your computer.
+3. Run the `install_free_upscaler.bat`:
+   - The installer automatically locates your Automatic1111 or Forge root folder.
+   - It copies all required files and installs dependencies.
+4. Restart your WebUI. The extension will appear in the **Extensions** tab.
+
+### **Option 2: Manual Installation**
+
+1. **Download** this repository or grab the ZIP from the [Releases](../../releases).
+2. Extract the contents somewhere on your computer.
+3. Copy the following files/folders into your WebUI installation:
+   - `__init__.py` and `requirements.txt` into:  
+     ```
+     <WebUI Directory>/extensions/regional-prompt-upscaler-hallett/
+     ```
+   - Contents of the `scripts/` folder into:  
+     ```
+     <WebUI Directory>/extensions/regional-prompt-upscaler-hallett/scripts/
+     ```
+4. Install dependencies by running (in your WebUI environment):
    ```bash
-   git clone https://github.com/HallettVisual/Regional-Prompt-Upscaler.git
+   pip install -r extensions/regional-prompt-upscaler-hallett/requirements.txt
    ```
+5. Restart your WebUI. The extension will now appear in the **Extensions** tab.
 
-2. **Copy the scripts**: Move the contents of the `scripts/` folder into the `extensions/` folder of your **Automatic1111 Web UI** or **Forge** installation.
+---
 
-3. **Restart your Web UI**: After restarting, the extension should be available under the "Extensions" tab.
+## **Usage**
 
-## Usage
+1. **Load an Image**  
+   In the **img2img** tab of your WebUI, load the image you want to upscale.
 
-Once installed, the **Regional Prompt Upscaler** can be accessed through the Web UI interface. Here's how to use it:
+2. **Set Scaling & Denoising**  
+   - Choose a **Resize** (e.g. 4X).  
+   - Adjust **denoising strength** (e.g. **0.3–0.5**). A sweet spot is around **0.38** for balanced detail.
 
-1. **Load an Image**: Select an image that you want to upscale.
-2. **Define Regions**: Mark the areas in the image where you want different prompts to apply.
-3. **Enter Prompts**: Input the prompts for each defined region. The upscaling model will use these prompts to guide the enhancement process.
-4. **Run the Upscaler**: Click "Upscale" to apply the prompts to the selected regions and generate the final image.
+3. **Configure Tiles & Prompts**  
+   - **Tile Size**: Typically **1024**, but adjustable based on your image.  
+   - **Feather Amount** & **Overlap**: Control how tiles blend (e.g., 50 feather, 20% overlap).  
+   - **Prompt Generation**: Select BLIP, Florence-2, CLIP, or ViT-GPT2.  
+   - **LoRA**: Quickly apply a LoRA model; the script updates prompts automatically.
 
-## Requirements
+4. **Generate the Upscaled Image**  
+   - Click **Generate** to process each tile with its own region-aware prompt.
 
-Ensure the following requirements are met to use the extension:
+Here’s an example of typical settings:  
+![Settings Panel](assets/hallett_settings.jpg)
+
+5. **Optional Excel Editing**  
+   - Export tile prompts to Excel, batch-edit them, then re-import for precise control.
+
+6. **Enjoy the Results**  
+   - You’ll get a final upscaled image with region-specific enhancements and smooth transitions.
+
+Example output showing improved detail and seamless blending:  
+![Upscaled Output](assets/sample_compare.jpg)
+
+---
+
+## **Requirements**
 
 - **Python 3.8+**
-- **Stable Diffusion Web UI (Automatic1111)** or **Forge**
-- Python libraries such as:
-  - `gradio`
+- **Automatic1111 WebUI** or **Forge**
+- **Python Libraries** (installed via `requirements.txt`):
   - `torch`
-  - `PIL` (Pillow)
+  - `transformers`
+  - `openpyxl`
+  - `numpy`
+  - `opencv-python`
+  - `Pillow`
+  - `gradio`
+  - `clip-interrogator`
 
-You can install these dependencies with the following command:
-```bash
-pip install -r requirements.txt
-```
+---
 
-### Input Image
+## **Changelog**
 
-![Input Image](assets/Location.JPG)
+### **v1.3**
+- All Free Except for Night Conversions
+- Enhanced category filtering (including user-defined words).
+- More flexible tile arrangement logic.
+- Minor UI cleanup.
 
-### Upscaled Output
+### **v1.2**
+- Added batch installer for smooth setup.  
+- Introduced feathering and overlap sliders for better blending.  
+- Improved compatibility with Flux/SDXL.  
+- Enhanced LoRA dropdown for quick selection.  
+- Integrated Florence-2 for more robust prompt generation.
 
-![Upscaled Output](assets/Upscale_Forge2.jpeg)
+---
 
-In this example, different prompts were applied to different regions of the image, resulting in an intelligently upscaled image.
+## **Contributing**
 
-## Contributing
+Contributions are welcome! Feel free to open issues or submit pull requests for improvements.
 
-Contributions are welcome! Feel free to submit issues, suggestions, or pull requests to improve the project.
+---
 
-## License
+## **License**
 
-This project is licensed under the [GPLv3 License](LICENSE). You are free to use the software and modify it, but any derivative works must also be open-source and distributed under the same license.
+Licensed under the [GPLv3 License](LICENSE). You can use and modify the software, but derivative works must also remain open-source under the same terms.
 
-## Contact
+---
 
-For commercial inquiries, reach out at [your contact info or website].
-```
+## **Credits**
+
+Inspired by [Coyote-A's Ultimate Upscale for Automatic1111](https://github.com/Coyote-A/ultimate-upscale-for-automatic1111). We appreciate the foundational ideas and scripts that made this extension possible.
+
+---
+
+## **Contact**
+
+For support, feature requests, or commercial inquiries, visit [Hallett Visual](https://hallett-ai.com) or reach out via the website.

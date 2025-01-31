@@ -1,0 +1,20 @@
+Controlnets
+
+Tile SDXL Location
+https://huggingface.co/xinsir/controlnet-tile-sdxl-1.0
+
+This file and rename it xinsir_contronet_tiles_xl
+https://huggingface.co/xinsir/controlnet-tile-sdxl-1.0/blob/main/diffusion_pytorch_model.safetensors
+
+
+Checkpoint used in the video
+https://civitai.com/models/277058?modelVersionId=1346244
+
+
+Detailer
+FLUX
+https://civitai.com/models/685874/detailer-flux
+
+SDXL
+https://civitai.com/models/122359/detail-tweaker-xl
+
