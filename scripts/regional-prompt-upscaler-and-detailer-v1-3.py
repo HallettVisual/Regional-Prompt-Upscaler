@@ -1,5 +1,5 @@
 """
-Regional Prompt Upscaler and Detailer v1.3
+Regional Prompt Upscaler and Detailer v1.3.1
 
 Changes from 1.2:
 1) Restores "Remove Words" textbox for additional user-defined words.
@@ -36,9 +36,26 @@ from modules import processing, shared, images, scripts
 from modules.processing import Processed, fix_seed
 from modules.shared import opts, state
 
-from openpyxl import Workbook, load_workbook
-from openpyxl.utils import get_column_letter
-from openpyxl.styles import Alignment
+# Ensure the correct site-packages directory is in sys.path
+venv_site_packages = os.path.join(os.path.dirname(sys.executable), "Lib", "site-packages")
+if venv_site_packages not in sys.path:
+    sys.path.append(venv_site_packages)
+
+try:
+    from openpyxl import Workbook, load_workbook
+    from openpyxl.utils import get_column_letter
+    from openpyxl.styles import Alignment
+except ImportError:
+    print("Error: 'openpyxl' is not installed. Attempting to install it now...")
+    try:
+        import subprocess
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "openpyxl"])
+        from openpyxl import Workbook, load_workbook
+        from openpyxl.utils import get_column_letter
+        from openpyxl.styles import Alignment
+    except Exception as e:
+        print(f"Failed to install 'openpyxl': {e}")
+        sys.exit(1)  # Exit the script if installation fails
 
 from transformers import (
     BlipProcessor, BlipForConditionalGeneration,
@@ -487,7 +504,7 @@ class CLIPPromptGenerator(PromptGeneratorBase):
 # -------------------------------------------------
 # USDURedraw
 # -------------------------------------------------
-TILE_SIZE_MIN = 1024
+TILE_SIZE_MIN = 512
 TILE_SIZE_MAX = 1536
 TILE_SIZE_STEP = 64
 DEFAULT_TILE_SIZE = 1024
@@ -823,7 +840,8 @@ class USDUpscaler:
         min_keyword_overlap: int,
         context_window_scale: float,
         exclude_categories: Dict[str, bool],
-        user_words_to_remove: str
+        user_words_to_remove: str,
+        auto_scale: bool
     ):
         self.p = p
         self.image = image
@@ -869,7 +887,7 @@ class USDUpscaler:
         # (1) Upscale entire image if chosen
         self.upscale_image()
         # (2) Setup tiles
-        self.setup_tiles(tile_size, overlap_percentage, tile_size_min, tile_size_max)
+        self.setup_tiles(tile_size, overlap_percentage, tile_size_min, tile_size_max, auto_scale)
 
     def init_generator(self, method: str):
         if method == "NONE":
@@ -914,11 +932,12 @@ class USDUpscaler:
         tile_size: int,
         overlap_percentage: float,
         tile_size_min: int,
-        tile_size_max: int
+        tile_size_max: int,
+        auto_scale: bool
     ):
         w, h = self.image.size
 
-        if tile_size_min < tile_size_max:
+        if auto_scale:
             best_tile_size = tile_size_min
             min_tile_count = float('inf')
 
@@ -936,9 +955,8 @@ class USDUpscaler:
             self.redraw.tile_size = best_tile_size
             logger.info(f"Auto-selected tile size => {best_tile_size} ({min_tile_count} tiles).")
         else:
-            bounded_size = max(tile_size_min, min(tile_size_max, tile_size))
-            self.redraw.tile_size = bounded_size
-            logger.info(f"Using tile_size => {bounded_size}")
+            self.redraw.tile_size = tile_size
+            logger.info(f"Using fixed tile size => {tile_size}")
 
         self.redraw.overlap_percentage = overlap_percentage
         self.redraw.overlap = int(overlap_percentage / 100 * self.redraw.tile_size)
@@ -1148,12 +1166,26 @@ class Script(scripts.Script):
                             choices=[x.name for x in shared.sd_upscalers],
                             value=(shared.sd_upscalers[0].name if len(shared.sd_upscalers) else "None")
                         )
+                        auto_scale = gr.Checkbox(label='Auto Scale Tiles', value=True)
                         with gr.Row():
-                            tile_size_min = gr.Slider(label='Min Tile Size', minimum=1024, maximum=1536, step=64, value=1024)
-                            tile_size_max = gr.Slider(label='Max Tile Size', minimum=1024, maximum=4096, step=64, value=1536)
+                            tile_size_min = gr.Slider(label='Min Tile Size (Auto)', minimum=512, maximum=1536, step=64, value=1024)
+                            tile_size_max = gr.Slider(label='Max Tile Size (Auto)', minimum=1024, maximum=2048, step=64, value=1536)
                         tile_size = gr.Slider(
-                            label='Preferred Tile Size',
-                            minimum=1024, maximum=2048, step=64, value=1024
+                            label='Fixed Tile Size',
+                            minimum=512, maximum=2560, step=64, value=1024
+                        )
+
+                        def update_slider_visibility(auto):
+                            return [
+                                gr.update(visible=auto),  # min
+                                gr.update(visible=auto),  # max
+                                gr.update(visible=not auto)  # fixed
+                            ]
+
+                        auto_scale.change(
+                            update_slider_visibility,
+                            inputs=[auto_scale],
+                            outputs=[tile_size_min, tile_size_max, tile_size]
                         )
                         overlap_percentage = gr.Slider(label='Tile Overlap (%)', minimum=0, maximum=50, step=1, value=20)
                         feather_amount = gr.Slider(label='Feather Amount', minimum=0, maximum=384, step=1, value=128)
@@ -1186,7 +1218,7 @@ class Script(scripts.Script):
                 with gr.Column():
                     with gr.Box():
                         gr.HTML("<b>Filtering & Night Mode</b>")
-                        turn_to_night = gr.Checkbox(label="Night Mode - Requires Add-on From Hallett-ai.com", value=False)
+                        turn_to_night = gr.Checkbox(label="Convert to Night | Requires Add-on from Hallett-ai.com", value=False)
 
                         # The 8 categories, in specified order
                         cat_checkboxes = {}
@@ -1261,7 +1293,8 @@ class Script(scripts.Script):
                 turn_to_night,
                 lora_model,
                 debug_logging,
-                words_to_remove
+                words_to_remove,
+                auto_scale
             ] + [cat_checkboxes[key] for key, _ in self.category_order]  # Ensure ordered checkboxes
 
     def run(self, p, *all_args):
@@ -1273,8 +1306,8 @@ class Script(scripts.Script):
         We'll parse them carefully below.
         """
         # Split arguments into known args and category values
-        known_args = all_args[:21]  # Ensure we get all 21 parameters
-        cat_checkbox_values = all_args[21:]  # 8 category checkboxes
+        known_args = all_args[:22]  # First 22 are known parameters
+        cat_checkbox_values = all_args[22:]  # Remaining are category checkboxes
 
         # Unpack known arguments in the same order as ui() returns them
         (
@@ -1290,7 +1323,8 @@ class Script(scripts.Script):
             turn_to_night,
             lora_model_name,
             debug_logging,
-            words_to_remove
+            words_to_remove,
+            auto_scale
         ) = known_args
 
         # Update logging if needed
@@ -1345,7 +1379,8 @@ class Script(scripts.Script):
             min_keyword_overlap=min_keyword_overlap,
             context_window_scale=context_window_scale,
             exclude_categories=exclude_categories,
-            user_words_to_remove=words_to_remove
+            user_words_to_remove=words_to_remove,
+            auto_scale=auto_scale
         )
 
         # Execute
