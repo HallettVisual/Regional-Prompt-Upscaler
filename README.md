@@ -3,7 +3,8 @@
 **Version:** 1.3  
 **Author:** [Matthew Hallett](https://hallett-ai.com)
 
-The **Regional Prompt Upscaler and Detailer** is an upscaler+detailer extension for **Automatic1111 Web UI** and **Forge**, based on [Ultimate Upscale for Automatic1111](https://github.com/Coyote-A/ultimate-upscale-for-automatic1111). It enhances the process by automatically applying region-specific prompts for each tile before generation, leveraging four different Vision-Language Models (VLMs). This approach adds fine details in specific areas while preserving large, smooth sections like skies—keeping them free of artifacts or hallucinations. Unlike ControlNet-Tile, which can constrain new detail generation or transformations when combined with LoRAs, this extension offers more freedom and nuance.
+The **Regional Prompt Upscaler and Detailer** is an upscaler+detailer extension for **Automatic1111 Web UI** and **Forge**, based on [Ultimate Upscale for Automatic1111](https://github.com/Coyote-A/ultimate-upscale-for-automatic1111). This extension enhances the upscaling process by intelligently applying region-specific prompts to each tile before generation, leveraging four different Vision-Language Models (VLMs). The result? Sharper details in key areas while keeping large, smooth regions—like skies—artifact-free and natural-looking.
+With easy prompt filtering, quick LoRA selection, and precise feather and overlap controls, this version builds on everything great about Ultimate Upscaler—and takes it even further. If you liked the original, you’ll love this.
 
 ## **Features**
 
