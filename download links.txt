@@ -1,8 +1,11 @@
 Controlnets
 
-Tile SDXL Location
-https://huggingface.co/xinsir/controlnet-tile-sdxl-1.0
+Tile SDXL Location Civit
+https://civitai.com/models/699930/xinsir-sontrolnet-tile-sdxl-10
 
+
+Hugginface
+https://huggingface.co/xinsir/controlnet-tile-sdxl-1.0
 This file and rename it xinsir_contronet_tiles_xl
 https://huggingface.co/xinsir/controlnet-tile-sdxl-1.0/blob/main/diffusion_pytorch_model.safetensors
 
@@ -17,4 +20,3 @@ https://civitai.com/models/685874/detailer-flux
 
 SDXL
 https://civitai.com/models/122359/detail-tweaker-xl
-
